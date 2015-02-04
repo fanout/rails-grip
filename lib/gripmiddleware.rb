@@ -24,7 +24,8 @@ class GripMiddleware
         headers = {'Content-Type' => 'application/grip-instruct'}
       else
         headers['Grip-Hold'] = env['grip_hold']
-        headers['Grip-Channel'] = env['grip_channels']
+        headers['Grip-Channel'] = GripControl.create_grip_channel_header(
+            env['grip_channels'])
         if !env['grip_timeout'].nil?
           headers['Grip-Timeout'] = env['grip_timeout'].to_s
         end
