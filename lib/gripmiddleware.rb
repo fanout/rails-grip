@@ -4,7 +4,8 @@ class GripMiddleware
   def initialize(app)  
     @app = app  
   end
-    
+
+  # TODO: Add a mechanism to set to websocket-only.
   def call(env)
     status, headers, response = @app.call(env)
     if !env['grip_hold'].nil?

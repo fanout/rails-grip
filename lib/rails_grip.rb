@@ -3,6 +3,7 @@ require 'gripcontrol'
 
 require_relative 'gripmiddleware.rb'
 
+# TODO: Use application configuration where appropriate.
 class RailsGrip
   @@pub_config = nil
   @@grip_config = nil
