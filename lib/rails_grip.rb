@@ -5,9 +5,6 @@ require_relative 'gripmiddleware.rb'
 
 # TODO: Use application configuration where appropriate.
 class RailsGrip
-  @@pub_config = nil
-  @@grip_config = nil
-
   def self.publish(channel, formats, id=nil, prev_id=nil)
     pub = RailsGrip.get_pubcontrol
     pub.publish(channel, Item.new(formats, id, prev_id))
@@ -29,21 +26,16 @@ class RailsGrip
     request.env['grip_channels'] = channels
   end
 
-  def self.configure(pub_config=nil, grip_config=nil)
-    @@pub_config = pub_config;
-    @@grip_config = grip_config;
-  end
-
   private
 
   def self.get_pubcontrol
     if Thread.current['pubcontrol'].nil?
       pub = GripPubControl.new()
-      if !@@pub_config.nil?
-        pub.apply_config(@@pub_config)
+      if Rails.application.config.respond_to?(:grip_proxies)
+        pub.apply_config(Rails.application.config.grip_proxies)
       end
-      if !@@grip_config.nil?
-        pub.apply_grip_config(@@grip_config)        
+      if Rails.application.config.respond_to?(:publish_servers)
+        pub.apply_grip_config(Rails.application.config.publish_servers)
       end
       at_exit { pub.finish }
       Thread.current['pubcontrol'] = pub
