@@ -1,4 +1,4 @@
-using 'gripcontrol'
+require 'gripcontrol'
 
 class WebSocketContext
   def initialize(id, meta, in_events)
@@ -15,8 +15,8 @@ class WebSocketContext
   end
 
   def is_opening
-    return @in_events and @in_events.length > 0 and 
-        @in_events[0].type == 'OPEN'
+    return (!@in_events.nil? and @in_events.length > 0 and 
+        @in_events[0].type == 'OPEN')
   end
 
   def accept
@@ -44,7 +44,7 @@ class WebSocketContext
 
   def recv
     e = nil
-    while e.nil? and @read_index < @in_events.length:
+    while e.nil? and @read_index < @in_events.length do
       if ['TEXT', 'BINARY', 'CLOSE', 'DISCONNECT'].include?(
           @in_events[@read_index].type)
         e = @in_events[@read_index]

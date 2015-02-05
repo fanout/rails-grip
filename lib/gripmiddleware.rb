@@ -1,4 +1,5 @@
 require 'gripcontrol'
+require_relative 'websocketcontext.rb'
 
 class GripMiddleware
   def initialize(app)  
@@ -20,10 +21,10 @@ class GripMiddleware
       end
     end
     content_type = nil
-    if env.key?('HTTP_CONTENT_TYPE')
-      content_type = env['HTTP_CONTENT_TYPE']
+    if env.key?('CONTENT_TYPE')
+      content_type = env['CONTENT_TYPE']
       at = content_type.index(';')
-      if at != -1
+      if !at.nil?
         content_type = content_type[0..at-1]
       end
     end
@@ -39,13 +40,12 @@ class GripMiddleware
     wscontext = nil
     if env['REQUEST_METHOD'] == 'POST' and ((content_type == 
         'application/websocket-events') or (!accept_types.nil? and
-        accept_types.key?('application/websocket-events')))
+        accept_types.include?('application/websocket-events')))
       cid = nil
       if env.key?('HTTP_CONNECTION_ID')
         cid = env['HTTP_CONNECTION_ID']
       end
-      # TODO: figure out META data.
-      meta = []
+      meta = {}
       env.each do |k, v|
         if k.start_with?('HTTP_META_')
           meta[convert_header_name(k[10..-1])] = v
@@ -53,19 +53,21 @@ class GripMiddleware
       end
       events = nil
       begin
-        events = GripControl.decode_websocket_events(env["rack.input"])
+        events = GripControl.decode_websocket_events(env["rack.input"].read)
       rescue
         return [ 400, {}, ["Error parsing WebSocket events.\n"]]
       end
       wscontext = WebSocketContext.new(cid, meta, events)
-      puts 'CID: ' + cid.to_s
-      puts 'META: ' + meta.to_s
-      puts 'Events: ' + events.to_s
     end
     env['grip_proxied'] = grip_signed
     env['grip_wscontext'] = wscontext
     status, headers, response = @app.call(env)
+    puts 'Status: ' + status.to_s
+    puts 'Headers: ' + headers.to_s
+    puts 'Response: ' + response.to_s
+
     if !env['grip_wscontext'].nil? and status == 200 and response.length == 0
+      puts 'WebSocket!'
       # TODO: Complete.
     elsif !env['grip_hold'].nil?
       if status == 304
@@ -98,7 +100,7 @@ class GripMiddleware
 
   def convert_header_name(name)
     out = ''
-    name.each do |c|
+    name.each_char do |c|
       if c == '_'
         out += '-'
       else

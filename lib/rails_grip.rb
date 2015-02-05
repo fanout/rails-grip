@@ -3,13 +3,13 @@ require 'gripcontrol'
 
 require_relative 'gripmiddleware.rb'
 
-# TODO: Use application configuration where appropriate.
 class RailsGrip
   def self.publish(channel, formats, id=nil, prev_id=nil)
     pub = RailsGrip.get_pubcontrol
     pub.publish(channel, Item.new(formats, id, prev_id))
   end
 
+  # FIXME: Fix publishing to Fanout servers via publish_servers.
   def self.publish_async(channel, formats, id=nil, prev_id=nil, callback=nil)
     pub = RailsGrip.get_pubcontrol
     pub.publish_async(channel, Item.new(formats, id, prev_id), callback)
@@ -30,12 +30,12 @@ class RailsGrip
 
   def self.get_pubcontrol
     if Thread.current['pubcontrol'].nil?
-      pub = GripPubControl.new()
+      pub = GripPubControl.new
       if Rails.application.config.respond_to?(:grip_proxies)
-        pub.apply_config(Rails.application.config.grip_proxies)
+        pub.apply_grip_config(Rails.application.config.grip_proxies)
       end
       if Rails.application.config.respond_to?(:publish_servers)
-        pub.apply_grip_config(Rails.application.config.publish_servers)
+        pub.apply_config(Rails.application.config.publish_servers)
       end
       at_exit { pub.finish }
       Thread.current['pubcontrol'] = pub
