@@ -7,6 +7,7 @@ class WebSocketContext
   attr_accessor :out_events
   attr_accessor :closed
   attr_accessor :out_close_code
+  attr_accessor :close_code
 
   def initialize(id, meta, in_events)
     @id = id
@@ -40,7 +41,7 @@ class WebSocketContext
   end
 
   def can_recv
-    for n in @read_index..@in_events.length do
+    for n in @read_index..@in_events.length-1 do
       if ['TEXT', 'BINARY', 'CLOSE', 'DISCONNECT'].include?(
           @in_events[n].type)
         return true

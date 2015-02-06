@@ -33,6 +33,13 @@ class RailsGrip
     return false
   end
 
+  def self.get_wscontext(request)
+    if request.env.key?('grip_wscontext')
+      return request.env['grip_wscontext']
+    end
+    return nil
+  end
+
   private
 
   def self.get_pubcontrol

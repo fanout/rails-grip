@@ -63,18 +63,7 @@ class GripMiddleware
     env['grip_proxied'] = grip_signed
     env['grip_wscontext'] = wscontext
     status, headers, response = @app.call(env)
-    # TODO: Figure out the space issue.
-    if (!env['grip_wscontext'].nil? and status == 200) # and (
-        #response.body.nil? or response.body.length == 0))
-
-      wscontext.orig_meta['user'] = 'valueuser'
-      wscontext.orig_meta['something-2'] = 'value2'
-      wscontext.orig_meta['something3'] = 'value3'
-      wscontext.orig_meta['something4'] = 'value4'
-      wscontext.meta['user'] = 'valueuser'
-      wscontext.meta['something-2'] = 'value2'
-      wscontext.meta['something4'] = 'value4'
-
+    if !env['grip_wscontext'].nil? and status == 200
       wscontext = env['grip_wscontext']
       meta_remove = Set.new
       wscontext.orig_meta.each do |k, v|
@@ -109,12 +98,12 @@ class GripMiddleware
       end
       events.push(*wscontext.out_events)
       if wscontext.closed
-        events.push(WebSocketEvent.new('CLOSE', wscontext.
-            out_close_code.pack('S_')))
+        events.push(WebSocketEvent.new('CLOSE',
+            [wscontext.out_close_code].pack('S_')))
       end
       response.body = GripControl.encode_websocket_events(events)
-      response.content_type = 'application/grip-instruct'
-      headers['Content-Type'] = 'application/grip-instruct'
+      response.content_type = 'application/websocket-events'
+      headers['Content-Type'] = 'application/websocket-events'
       if wscontext.accepted
 				headers['Sec-WebSocket-Extensions'] = 'grip'
       end
@@ -125,7 +114,6 @@ class GripMiddleware
 		    headers['Set-Meta-' + k] = v
       end
     elsif !env['grip_hold'].nil?
-      puts 'Non WebSocket!'
       if status == 304
         iheaders = headers.clone
         if !iheaders.key?('Location') and !response.location.nil?

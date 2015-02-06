@@ -88,3 +88,48 @@ class GripController < ApplicationController
   end
 end
 ```
+
+Stateless WebSocket echo service with broadcast endpoint:
+
+```Ruby
+class WebSocketOverHttpGripController < ApplicationController
+  def echo
+    render nothing: true
+
+    # ??????? since we used the decorator, this will always be a non-nil value
+    ws = RailsGrip.get_wscontext(request)
+
+    # if this is a new connection, accept it and subscribe it to a channel
+    if ws.is_opening
+      ws.accept
+      ws.subscribe('test_channel')
+    end
+
+    while ws.can_recv do
+      message = ws.recv
+
+      # if return value is nil, then the connection is closed
+      if message.nil?
+        ws.close
+        break
+      end
+
+      # echo the message
+      ws.send(message)
+    end
+  end
+
+  def broadcast
+    if request.method == 'POST'
+
+      # publish data to all clients that are connected to the echo endpoint
+      data = request.body.read
+      RailsGrip.publish('test_channel', WebSocketMessageFormat.new(data))
+
+      render :text => "Ok\n"
+    else
+      render :text => "Method not allowed\n", :status => 405
+    end
+  end
+end
+```
