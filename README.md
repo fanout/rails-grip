@@ -8,7 +8,7 @@ A Ruby on Rails GRIP library.
 License
 -------
 
-ruby-gripcontrol is offered under the MIT license. See the LICENSE file.
+rails-grip is offered under the MIT license. See the LICENSE file.
 
 Installation
 ------------
@@ -64,10 +64,10 @@ module GripApp
     ...
 ```
 
-Note that in Rails 4 the following should be set in the ApplicationController to avoid CSRF authenticity exceptions when designing APIs:
+Note that in Rails 4 the following should be set for API endpoints in the ApplicationController to avoid CSRF authenticity exceptions:
 
 ```Ruby
-protect_from_forgery with: :null_session
+protect_from_forgery except: :<api_endpoint>
 ```
 
 Example controller:
