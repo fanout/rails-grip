@@ -26,6 +26,13 @@ class RailsGrip
     request.env['grip_channels'] = channels
   end
 
+  def self.is_grip_proxied(request)
+    if request.env.key?('grip_proxied')
+      return request.env['grip_proxied']
+    end
+    return false
+  end
+
   private
 
   def self.get_pubcontrol

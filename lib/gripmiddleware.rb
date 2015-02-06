@@ -1,3 +1,4 @@
+require 'set'
 require 'gripcontrol'
 require_relative 'websocketcontext.rb'
 
@@ -62,14 +63,60 @@ class GripMiddleware
     env['grip_proxied'] = grip_signed
     env['grip_wscontext'] = wscontext
     status, headers, response = @app.call(env)
-    puts 'Status: ' + status.to_s
-    puts 'Headers: ' + headers.to_s
-    puts 'Response: ' + response.to_s
-
-    if !env['grip_wscontext'].nil? and status == 200 and response.length == 0
-      puts 'WebSocket!'
-      # TODO: Complete.
+    # TODO: Figure out the space issue.
+    if (!env['grip_wscontext'].nil? and status == 200) # and (
+        #response.body.nil? or response.body.length == 0))
+      wscontext = env['grip_wscontext']
+      meta_remove = Set.new
+      wscontext.orig_meta.each do |k, v|
+        found = false
+        wscontext.meta.each do |nk, nv|
+          if nk.downcase == k
+            found = true
+            break
+          end
+        end
+        if !found
+          meta_remove.add(k)
+        end
+      end
+      meta_set = {}
+      wscontext.meta.each do |k, v|
+        lname = k.downcase
+        need_set = true        
+        wscontext.orig_meta.each do |ok, ov|
+          if lname == ok and v == ov
+            need_set = false
+            break
+          end
+        end
+        if need_set
+          meta_set[lname] = v
+        end
+      end
+      events = []
+      if wscontext.accepted
+        events.push(WebSocketEvent.new('OPEN'))
+      end
+      events.push(*wscontext.out_events)
+      if wscontext.closed
+        events.push(WebSocketEvent.new('CLOSE', wscontext.
+            out_close_code.pack('S_')))
+      end
+      response.body = GripControl.encode_websocket_events(events)
+      response.content_type = 'application/grip-instruct'
+      headers['Content-Type'] = 'application/grip-instruct'
+      if wscontext.accepted
+				headers['Sec-WebSocket-Extensions'] = 'grip'
+      end
+      meta_remove.each do |k, v|
+		    headers['Set-Meta-' + k] = ''
+      end
+      meta_set.each do |k, v|
+		    headers['Set-Meta-' + k] = v
+      end
     elsif !env['grip_hold'].nil?
+      puts 'Non WebSocket!'
       if status == 304
         iheaders = headers.clone
         if !iheaders.key?('Location') and !response.location.nil?

@@ -1,6 +1,13 @@
 require 'gripcontrol'
 
 class WebSocketContext
+  attr_accessor :orig_meta
+  attr_accessor :meta
+  attr_accessor :accepted
+  attr_accessor :out_events
+  attr_accessor :closed
+  attr_accessor :out_close_code
+
   def initialize(id, meta, in_events)
     @id = id
     @in_events = in_events
@@ -60,7 +67,7 @@ class WebSocketContext
       return e.content
     elsif e.type == 'CLOSE'
       if !e.content.nil? and e.content.length == 2
-        @close_code = e.content.unpack('H')[0]
+        @close_code = e.content.unpack('S_')[0]
       end
       return nil
     else
