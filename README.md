@@ -54,6 +54,8 @@ You can also set any other EPCP servers that aren't necessarily proxies with pub
 ```Ruby
 module GripApp
   class Application < Rails::Application
+```
+```
     config.publish_servers = [
         {
             'uri' => 'http://example.com/base-uri',

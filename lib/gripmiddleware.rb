@@ -66,6 +66,15 @@ class GripMiddleware
     # TODO: Figure out the space issue.
     if (!env['grip_wscontext'].nil? and status == 200) # and (
         #response.body.nil? or response.body.length == 0))
+
+      wscontext.orig_meta['user'] = 'valueuser'
+      wscontext.orig_meta['something-2'] = 'value2'
+      wscontext.orig_meta['something3'] = 'value3'
+      wscontext.orig_meta['something4'] = 'value4'
+      wscontext.meta['user'] = 'valueuser'
+      wscontext.meta['something-2'] = 'value2'
+      wscontext.meta['something4'] = 'value4'
+
       wscontext = env['grip_wscontext']
       meta_remove = Set.new
       wscontext.orig_meta.each do |k, v|
