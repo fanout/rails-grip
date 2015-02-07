@@ -1,6 +1,14 @@
+#    gripmiddleware.rb
+#    ~~~~~~~~~
+#    This module implements the GripMiddleware class.
+#    :authors: Konstantin Bokarius.
+#    :copyright: (c) 2015 by Fanout, Inc.
+#    :license: MIT, see LICENSE for more details.
+
 require 'set'
 require 'gripcontrol'
 require_relative 'websocketcontext.rb'
+require_relative 'nonwebsocketrequesterror.rb'
 
 class GripMiddleware
   def initialize(app)  
@@ -62,7 +70,11 @@ class GripMiddleware
     end
     env['grip_proxied'] = grip_signed
     env['grip_wscontext'] = wscontext
-    status, headers, response = @app.call(env)
+    begin
+      status, headers, response = @app.call(env)
+    rescue NonWebSocketRequestError => e 
+      return [400, {}, [e.message + "\n"]]
+    end
     if !env['grip_wscontext'].nil? and status == 200
       wscontext = env['grip_wscontext']
       meta_remove = Set.new

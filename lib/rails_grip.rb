@@ -1,3 +1,10 @@
+#    rails_grip.rb
+#    ~~~~~~~~~
+#    This module implements the RailsGrip class.
+#    :authors: Konstantin Bokarius.
+#    :copyright: (c) 2015 by Fanout, Inc.
+#    :license: MIT, see LICENSE for more details.
+
 require 'pubcontrol'
 require 'gripcontrol'
 
@@ -9,7 +16,6 @@ class RailsGrip
     pub.publish(channel, Item.new(formats, id, prev_id))
   end
 
-  # FIXME: Fix publishing to Fanout servers via publish_servers.
   def self.publish_async(channel, formats, id=nil, prev_id=nil, callback=nil)
     pub = RailsGrip.get_pubcontrol
     pub.publish_async(channel, Item.new(formats, id, prev_id), callback)
@@ -38,6 +44,12 @@ class RailsGrip
       return request.env['grip_wscontext']
     end
     return nil
+  end
+
+  def self.verify_is_websocket(request)
+    if !RailsGrip.get_wscontext(request)
+      raise NonWebSocketRequestError
+    end
   end
 
   private

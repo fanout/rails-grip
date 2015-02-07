@@ -9,7 +9,8 @@ Gem::Specification.new do |s|
   s.files       = ['lib/rails_grip.rb',
                    'lib/gripmiddleware.rb',
                    'lib/railtie.rb',
-                   'lib/websocketcontext.rb']
+                   'lib/websocketcontext.rb',
+                   'lib/nonwebsocketrequesterror.rb']
   s.homepage    = 'https://github.com/fanout/rails-grip'
   s.license     = 'MIT'
   s.required_ruby_version = '>= 1.9.0'

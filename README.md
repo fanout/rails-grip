@@ -96,8 +96,8 @@ class WebSocketOverHttpGripController < ApplicationController
   def echo
     render nothing: true
 
-    # ??????? since we used the decorator, this will always be a non-nil value
-    ws = RailsGrip.get_wscontext(request)
+    # reject non-websocket requests
+    RailsGrip.verify_is_websocket(request)
 
     # if this is a new connection, accept it and subscribe it to a channel
     if ws.is_opening
@@ -124,7 +124,7 @@ class WebSocketOverHttpGripController < ApplicationController
 
       # publish data to all clients that are connected to the echo endpoint
       data = request.body.read
-      RailsGrip.publish('test_channel', WebSocketMessageFormat.new(data))
+      RailsGrip.publish('<channel>', WebSocketMessageFormat.new(data))
 
       render :text => "Ok\n"
     else

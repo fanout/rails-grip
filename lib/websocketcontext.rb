@@ -1,3 +1,10 @@
+#    websocketcontext.rb
+#    ~~~~~~~~~
+#    This module implements the WebSocketContext class.
+#    :authors: Konstantin Bokarius.
+#    :copyright: (c) 2015 by Fanout, Inc.
+#    :license: MIT, see LICENSE for more details.
+
 require 'gripcontrol'
 
 class WebSocketContext
