@@ -93,12 +93,12 @@ class WebSocketContext
 
   def subscribe(channel)
     send_control(GripControl.websocket_control_message(
-        'subscribe', {'channel' => channel}))
+        RailsSettings.get_prefix + 'subscribe', {'channel' => channel}))
   end
 
   def unsubscribe(channel)
     send_control(GripControl.websocket_control_message(
-        'unsubscribe', {'channel' => channel}))
+        RailsSettings.get_prefix + 'unsubscribe', {'channel' => channel}))
   end
 
   def detach(channel)

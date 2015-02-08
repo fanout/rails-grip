@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'rails_grip'
   s.version     = '0.0.1'
-  s.date        = '2015-02-04'
+  s.date        = '2015-02-07'
   s.summary     = 'GRIP library for Ruby on Rails'
   s.description = 'A Ruby on Rails convenience library for working with GRIP proxies.'
   s.authors     = ['Konstantin Bokarius']
@@ -10,7 +10,8 @@ Gem::Specification.new do |s|
                    'lib/gripmiddleware.rb',
                    'lib/railtie.rb',
                    'lib/websocketcontext.rb',
-                   'lib/nonwebsocketrequesterror.rb']
+                   'lib/nonwebsocketrequesterror.rb',
+                   'lib/railssettings.rb']
   s.homepage    = 'https://github.com/fanout/rails-grip'
   s.license     = 'MIT'
   s.required_ruby_version = '>= 1.9.0'

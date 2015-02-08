@@ -20,14 +20,17 @@ class GripMiddleware
     env['grip_proxied'] = false
     env['grip_wscontext'] = nil
     grip_signed = false
-    if env.key?('HTTP_GRIP_SIG') and 
-        Rails.application.config.respond_to?(:grip_proxies)
-      Rails.application.config.grip_proxies.each do |entry|
+    grip_proxies = RailsSettings.get_grip_proxies
+    if env.key?('HTTP_GRIP_SIG') and !grip_proxies.nil?
+      grip_proxies.each do |entry|
         if GripControl.validate_sig(env['HTTP_GRIP_SIG'], entry['key'])         
           grip_signed = true
           break
         end
       end
+    end
+    if !grip_signed and RailsSettings.get_grip_proxy_required
+      return [ 501, {}, ["Not implemented.\n"]]
     end
     content_type = nil
     if env.key?('CONTENT_TYPE')
@@ -126,6 +129,13 @@ class GripMiddleware
 		    headers['Set-Meta-' + k] = v
       end
     elsif !env['grip_hold'].nil?
+      channels = env['grip_channels']
+      prefix = RailsSettings.get_prefix
+      if prefix != ''
+        channels.each do |channel|
+          channel.name = prefix + channel.name
+        end
+      end
       if status == 304
         iheaders = headers.clone
         if !iheaders.key?('Location') and !response.location.nil?
@@ -137,13 +147,13 @@ class GripMiddleware
           timeout = env['grip_timeout']
         end
         response.body = GripControl.create_hold(env['grip_hold'],
-            env['grip_channels'], iresponse, timeout)
+            channels, iresponse, timeout)
         response.content_type = 'application/grip-instruct'
         headers = {'Content-Type' => 'application/grip-instruct'}
       else
         headers['Grip-Hold'] = env['grip_hold']
         headers['Grip-Channel'] = GripControl.create_grip_channel_header(
-            env['grip_channels'])
+            channels)
         if !env['grip_timeout'].nil?
           headers['Grip-Timeout'] = env['grip_timeout'].to_s
         end
