@@ -13,6 +13,8 @@ rails-grip is offered under the MIT license. See the LICENSE file.
 Installation
 ------------
 
+This library is compatible with both Rails 3 and 4 running against either Ruby 1.9.x or 2.x.
+
 ```sh
 gem install rails_grip
 ```
@@ -46,13 +48,13 @@ config.grip_proxies = [
 ]
 ```
 
-To reject incoming requests that do not come from validated GRIP proxies add grip_proxy_required to your configuration:
+If it's possible for clients to access the Rails app directly, without necessarily going through the GRIP proxy, then you may want to avoid sending GRIP instructions to those clients. An easy way to achieve this is with the grip_proxy_required setting. If set, then any direct requests that trigger a GRIP instruction response will be given a 501 Not Implemented error instead.
 
 ```
 config.grip_proxy_required = true
 ```
 
-To use a custom GRIP message prefix set grip_prefix in your configuration:
+To prepend a fixed string to all channels used for publishing and subscribing, set grip_prefix in your configuration:
 
 ```
 grip_prefix = '<prefix>'
@@ -70,7 +72,7 @@ config.publish_servers = [
 ]
 ```
 
-This library also comes with a Rack middleware class and a Railstie implementation that will automatically add the middleware to the application when rails-grip is added to the application's Gemfile. The middleware will parse the Grip-Sig header in any requests in order to detect if they came from a GRIP proxy, and it will apply any hold instructions when responding. Additionally, the middleware handles WebSocket-Over-HTTP processing so that WebSockets managed by the GRIP proxy can be controlled via HTTP responses from the Django application.
+This library also comes with a Rack middleware class and a Railstie implementation that will automatically add the middleware to the application when rails-grip is added to the application's Gemfile. The middleware will parse the Grip-Sig header in any requests in order to detect if they came from a GRIP proxy, and it will apply any hold instructions when responding. Additionally, the middleware handles WebSocket-Over-HTTP processing so that WebSockets managed by the GRIP proxy can be controlled via HTTP responses from the Rails application.
 
 The middleware should be placed as early as possible in the proessing order, so that it can collect all response headers and provide them in a hold instruction if necessary.
 

@@ -29,9 +29,6 @@ class GripMiddleware
         end
       end
     end
-    if !grip_signed and RailsSettings.get_grip_proxy_required
-      return [ 501, {}, ["Not implemented.\n"]]
-    end
     content_type = nil
     if env.key?('CONTENT_TYPE')
       content_type = env['CONTENT_TYPE']
@@ -116,8 +113,12 @@ class GripMiddleware
         events.push(WebSocketEvent.new('CLOSE',
             [wscontext.out_close_code].pack('S_')))
       end
-      response.body = GripControl.encode_websocket_events(events)
-      response.content_type = 'application/websocket-events'
+      if response.respond_to?(:content_type)
+        response.body = GripControl.encode_websocket_events(events)
+        response.content_type = 'application/websocket-events'
+      else
+        response = [GripControl.encode_websocket_events(events)]
+      end
       headers['Content-Type'] = 'application/websocket-events'
       if wscontext.accepted
 				headers['Sec-WebSocket-Extensions'] = 'grip'
@@ -129,6 +130,9 @@ class GripMiddleware
 		    headers['Set-Meta-' + k] = v
       end
     elsif !env['grip_hold'].nil?
+      if !env['grip_proxied'] and RailsSettings.get_grip_proxy_required
+        return [ 501, {}, ["Not implemented.\n"]]
+      end
       channels = env['grip_channels']
       prefix = RailsSettings.get_prefix
       if prefix != ''
@@ -138,17 +142,28 @@ class GripMiddleware
       end
       if status == 304
         iheaders = headers.clone
-        if !iheaders.key?('Location') and !response.location.nil?
+        if !iheaders.key?('Location') and response.respond_to?(:location) and
+            !response.location.nil?
           iheaders['Location'] = response.location
         end
-        iresponse = Response.new(status, nil, iheaders, response.body)
+        if response.respond_to?(:body)
+          orig_body = response.body
+        else
+          orig_body = response.to_s
+        end
+        iresponse = Response.new(status, nil, iheaders, orig_body)
         timeout = nil
         if !env['grip_timeout'].nil?
           timeout = env['grip_timeout']
         end
-        response.body = GripControl.create_hold(env['grip_hold'],
-            channels, iresponse, timeout)
-        response.content_type = 'application/grip-instruct'
+        if response.respond_to?(:content_type)
+          response.body = GripControl.create_hold(env['grip_hold'],
+              channels, iresponse, timeout)
+          response.content_type = 'application/grip-instruct'
+        else
+          response = [GripControl.create_hold(env['grip_hold'],
+              channels, iresponse, timeout)]
+        end
         headers = {'Content-Type' => 'application/grip-instruct'}
       else
         headers['Grip-Hold'] = env['grip_hold']
