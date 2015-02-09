@@ -29,9 +29,13 @@ gem 'rails_grip'
 Usage
 -----
 
-Set grip_proxies in your application configuration:
+This library comes with a Rack middleware class, which you must use, and a Railstie implementation that will automatically add the middleware to the application when rails-grip is added to the application's Gemfile. The middleware will parse the Grip-Sig header in any requests to detect if they came from a GRIP proxy, and it will apply any hold instructions when responding. Additionally, the middleware handles WebSocket-Over-HTTP processing so that WebSockets managed by the GRIP proxy can be controlled via HTTP responses from the Rails application.
 
-```
+The middleware should be placed as early as possible in the processing order, so that it can collect all response headers and provide them in a hold instruction if necessary.
+
+Additionally, set grip_proxies in your application configuration:
+
+```Ruby
 # pushpin and/or fanout.io is used for sending realtime data to clients
 config.grip_proxies = [
     # pushpin
@@ -50,19 +54,19 @@ config.grip_proxies = [
 
 If it's possible for clients to access the Rails app directly, without necessarily going through the GRIP proxy, then you may want to avoid sending GRIP instructions to those clients. An easy way to achieve this is with the grip_proxy_required setting. If set, then any direct requests that trigger a GRIP instruction response will be given a 501 Not Implemented error instead.
 
-```
+```Ruby
 config.grip_proxy_required = true
 ```
 
 To prepend a fixed string to all channels used for publishing and subscribing, set grip_prefix in your configuration:
 
-```
+```Ruby
 grip_prefix = '<prefix>'
 ```
 
 You can also set any other EPCP servers that aren't necessarily proxies with publish_servers:
 
-```
+```Ruby
 config.publish_servers = [
     {
         'uri' => 'http://example.com/base-uri',
@@ -72,13 +76,9 @@ config.publish_servers = [
 ]
 ```
 
-This library also comes with a Rack middleware class and a Railstie implementation that will automatically add the middleware to the application when rails-grip is added to the application's Gemfile. The middleware will parse the Grip-Sig header in any requests in order to detect if they came from a GRIP proxy, and it will apply any hold instructions when responding. Additionally, the middleware handles WebSocket-Over-HTTP processing so that WebSockets managed by the GRIP proxy can be controlled via HTTP responses from the Rails application.
-
-The middleware should be placed as early as possible in the proessing order, so that it can collect all response headers and provide them in a hold instruction if necessary.
-
 Note that in Rails 4 the following should be set for API endpoints in the ApplicationController to avoid CSRF authenticity exceptions:
 
-```Ruby
+```
 protect_from_forgery except: :<api_endpoint>
 ```
 
@@ -95,7 +95,7 @@ class GripController < ApplicationController
 
     # subscribe every incoming request to a channel in stream mode
     RailsGrip.set_hold_stream(request, '<channel>')
-    render :text => '[stream open]'
+    render :text => '[stream open]\n'
   end
 
   def post
