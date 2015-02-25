@@ -15,7 +15,7 @@ class RailsGrip
   def self.publish(channel, formats, id=nil, prev_id=nil)
     pub = RailsGrip.get_pubcontrol
     pub.publish(RailsSettings.get_prefix + channel, Item.new(
-        formats, id,prev_id))
+        formats, id, prev_id))
   end
 
   def self.publish_async(channel, formats, id=nil, prev_id=nil, callback=nil)
