@@ -118,6 +118,7 @@ class WebSocketOverHttpGripController < ApplicationController
     RailsGrip.verify_is_websocket(request)
 
     # if this is a new connection, accept it and subscribe it to a channel
+    ws = RailsGrip.get_wscontext(request)
     if ws.is_opening
       ws.accept
       ws.subscribe('test_channel')
