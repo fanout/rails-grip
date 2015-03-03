@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'rails_grip'
-  s.version     = '1.0.1'
-  s.date        = '2015-02-07'
+  s.version     = '1.0.2'
+  s.date        = '2015-03-03'
   s.summary     = 'GRIP library for Ruby on Rails'
   s.description = 'A Ruby on Rails convenience library for working with GRIP proxies.'
   s.authors     = ['Konstantin Bokarius']
