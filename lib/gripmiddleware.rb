@@ -15,7 +15,6 @@ class GripMiddleware
     @app = app  
   end
 
-  # TODO: Add a mechanism to set to websocket-only.
   def call(env)
     env['grip_proxied'] = false
     env['grip_wscontext'] = nil
