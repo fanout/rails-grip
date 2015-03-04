@@ -110,7 +110,7 @@ class GripMiddleware
       events.push(*wscontext.out_events)
       if wscontext.closed
         events.push(WebSocketEvent.new('CLOSE',
-            [wscontext.out_close_code].pack('S_')))
+            [wscontext.out_close_code].pack('S>')))
       end
       if response.respond_to?(:content_type)
         response.body = GripControl.encode_websocket_events(events)

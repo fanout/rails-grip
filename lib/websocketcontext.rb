@@ -75,7 +75,7 @@ class WebSocketContext
       return e.content
     elsif e.type == 'CLOSE'
       if !e.content.nil? and e.content.length == 2
-        @close_code = e.content.unpack('S_')[0]
+        @close_code = e.content.unpack('S>')[0]
       end
       return nil
     else
