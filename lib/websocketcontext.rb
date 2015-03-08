@@ -72,6 +72,11 @@ class WebSocketContext
       raise 'read from empty buffer'
     end
     if e.type == 'TEXT' or e.type == 'BINARY'
+      if e.type == 'TEXT' and e.content.nil?
+        return ''
+      elsif e.type == 'BINARY' and e.content.nil?
+        return ''.encode("ASCII-8BIT")
+      end
       return e.content
     elsif e.type == 'CLOSE'
       if !e.content.nil? and e.content.length == 2
