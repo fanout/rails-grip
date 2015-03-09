@@ -89,11 +89,18 @@ class WebSocketContext
   end
 
   def send(message)
-    @out_events.push(WebSocketEvent.new('TEXT', 'm:' + message))
+    @out_events.push(WebSocketEvent.new('TEXT', 'm:'.encode("ASCII-8BIT") +
+        message.encode("ASCII-8BIT")))
+  end
+
+  def send_binary(message)
+    @out_events.push(WebSocketEvent.new('BINARY', 'm:'.encode("ASCII-8BIT") +
+        message.encode("ASCII-8BIT")))
   end
 
   def send_control(message)
-    @out_events.push(WebSocketEvent.new('TEXT', 'c:' + message))
+    @out_events.push(WebSocketEvent.new('TEXT', 'c:'.encode("ASCII-8BIT") +
+        message.encode("ASCII-8BIT")))
   end
 
   def subscribe(channel)
